@@ -1,3 +1,4 @@
+# Build image
 FROM alpine AS build
 
 RUN apk update && apk add curl tar
@@ -6,6 +7,7 @@ RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cl
 
 RUN tar -xf google-cloud-sdk-376.0.0-linux-x86_64.tar.gz
 
+# Install gcloud SDK and run image
 FROM python:3-alpine
 
 COPY --from=build /google-cloud-sdk ./gcloud-sdk
