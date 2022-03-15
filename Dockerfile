@@ -1,5 +1,5 @@
 # Build image
-FROM alpine AS build
+FROM python:3-alpine AS build
 
 RUN apk update && apk add curl tar
 
@@ -7,15 +7,15 @@ RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cl
 
 RUN tar -xf google-cloud-sdk-376.0.0-linux-x86_64.tar.gz
 
-# Install gcloud SDK and run image
+RUN ./google-cloud-sdk/install.sh
+
+RUN ./google-cloud-sdk/bin/gcloud components install --quiet beta bigtable
+
+# Run image
 FROM python:3-alpine
 
-COPY --from=build /google-cloud-sdk ./gcloud-sdk
-
-RUN ./gcloud-sdk/install.sh
-
-RUN ./gcloud-sdk/bin/gcloud components install --quiet bigtable beta
+COPY --from=build ./google-cloud-sdk/ .
 
 EXPOSE 8086
 
-CMD ["./gcloud-sdk/bin/gcloud", "beta", "emulators", "bigtable", "start"]
+ENTRYPOINT ./bin/gcloud beta emulators bigtable start --host-port=0.0.0.0:8086
